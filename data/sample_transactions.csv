@@ -1,0 +1,19 @@
+date,amount,description,type,category
+2025-10-01,250.50,Grocery store purchase,expense,Groceries
+2025-10-03,1500.00,Monthly rent,expense,Rent
+2025-10-05,80.00,Uber ride to work,expense,Transport
+2025-10-06,120.00,Electricity bill payment,expense,Utilities
+2025-10-07,450.00,Restaurant dinner with friends,expense,Dining
+2025-10-08,50000.00,October salary,income,Salary
+2025-10-10,999.00,Netflix annual subscription,expense,Entertainment
+2025-10-11,230.00,Doctor consultation,expense,Health
+2025-10-13,200.00,Online shopping - Flipkart,expense,Shopping
+2025-10-14,4000.00,Hotel booking for vacation,expense,Travel
+2025-10-15,75.00,Bus pass renewal,expense,Transport
+2025-10-17,320.00,Phone bill recharge,expense,Utilities
+2025-10-19,180.00,Lunch at Café Coffee Day,expense,Dining
+2025-10-20,500.00,Pharmacy medicines,expense,Health
+2025-10-21,600.00,Amazon order - electronics,expense,Shopping
+2025-10-22,300.00,Petrol refill,expense,Transport
+2025-10-23,450.00,Grocery mart purchase,expense,Groceries
+2025-10-23,1000.00,Freelance payment received,income,Salary
