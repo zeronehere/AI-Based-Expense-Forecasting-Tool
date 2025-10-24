@@ -1,234 +1,265 @@
-💰 AI Expense Forecaster — Project Documentation
-📘 Overview
+🧾 AI Expense Forecasting Tool — Detailed Project Documentation (Milestone 1 & 2)
+🏁 1. Abstract
 
-The AI Expense Forecaster is a smart web-based financial management tool that allows users to record, categorize, and visualize their expenses.
-Using machine learning and analytics, it aims to predict future spending patterns based on historical data.
+In the modern world, managing personal finances has become increasingly complex due to the growing number of digital transactions, multiple payment modes, and unpredictable spending habits. The AI Expense Forecasting Tool is designed to simplify financial management by helping users record, categorize, and analyze their income and expenses.
+The system provides an interactive web-based interface built using Streamlit or Flask, enabling users to manually input transactions and view their categorized spending reports.
 
-This document covers the completed stages — Milestone 1 and Milestone 2 — including design, architecture, backend APIs, and Streamlit frontend integration.
+By the completion of Milestone 1 and 2, the project achieves the ability to:
 
-🎯 Project Objectives
+Authenticate users through secure registration and login.
 
-Allow users to register and log in securely.
+Allow manual transaction input.
 
-Provide authenticated access using JWT tokens.
+Automatically categorize expenses using keyword-based NLP.
 
-Enable users to add, view, and analyze transactions (income and expenses).
+Generate visual summaries of spending behavior through basic analytics and charts.
 
-Build a Streamlit-based UI to upload CSV files and visualize expense data.
+These foundational features lay the groundwork for more advanced forecasting modules to be built in later milestones.
 
-Prepare the system for AI-based forecasting in later milestones.
+🎯 2. Aim
 
-🏗️ Tech Stack
-Layer	Technology
-Frontend	Streamlit
-Backend	Flask (Python)
-Database	SQLite3
-Authentication	JWT (JSON Web Tokens)
-Data Handling	Pandas
-Environment	Python virtual environment (venv)
-⚙️ Project Structure
-ai-expense-forecaster/
-│
-├── backend/
-│   ├── app.py                 # Main Flask application entry point
-│   ├── auth.py                # Authentication (register & login)
-│   ├── transactions.py        # Transaction management routes
-│   ├── db.py                  # SQLite database helpers
-│   ├── check_tables.py        # DB verification script
-│   └── data/
-│       └── expense.db         # SQLite database file
-│
-├── frontend/
-│   └── streamlit_app.py       # Streamlit frontend interface
-│
-└── data/
-    └── transactions.csv       # Sample dataset for testing
+To design and develop a personal financial management system that enables users to record, categorize, and visualize their expenses and income securely, forming the foundation for future AI-driven expense prediction.
 
-📍 Milestone 1: Backend Development (User Authentication + Transactions API)
-🔹 Goal
+📘 3. Objectives
 
-To create a secure backend with:
+To create a user authentication system ensuring secure access to personalized financial data.
 
-User registration & login
+To build an interface that allows manual entry of transaction data.
 
-JWT-based authentication
+To develop a basic rule-based categorization model to classify transactions (Groceries, Rent, Travel, etc.).
 
-SQLite database integration
+To provide visual spending summaries using analytical graphs.
 
-Basic CRUD operations for expense transactions
+To maintain scalable architecture, allowing future integration of AI/ML-based forecasting modules.
 
-🔹 Features Implemented
-1. User Registration (POST /auth/register)
+💡 4. Problem Definition
 
-Accepts user email and password.
+Managing personal finance manually using spreadsheets or notes is inefficient and error-prone. Users often fail to track where their money goes, leading to poor budgeting and uncontrolled expenses.
 
-Passwords are hashed using Werkzeug for security.
+Existing apps are either too complex or paid, leaving a gap for a simple, open-source, educational, and extendable expense manager that can later support intelligent financial predictions.
 
-Stores user credentials in SQLite.
+Thus, the problem addressed is:
 
-Sample Request:
+“How to design a simple, modular, and secure system that allows users to input, categorize, and analyze their spending behavior effectively.”
 
-POST /auth/register
-{
-  "email": "you@example.com",
-  "password": "testpass"
-}
+💪 5. Motivation
 
+The project was inspired by:
 
-Response:
+The lack of free, transparent tools for expense tracking.
 
-{
-  "msg": "registered",
-  "user_id": 1
-}
+The desire to build a foundation for AI-based financial forecasting using real or dummy datasets.
 
-2. User Login (POST /auth/login)
+The need for an MVP (Minimum Viable Product) that demonstrates integration of authentication, user data management, NLP-based categorization, and visualization.
 
-Verifies credentials.
+🧠 6. System Overview
 
-Returns a JWT access token if successful.
+The system consists of two main phases (Milestone 1 and 2):
 
-Sample Response:
+Milestone	Focus	Key Deliverables
+1 (Weeks 1-2)	User Authentication & Manual Input	Registration, Login, Profile, Transaction Form
+2 (Weeks 3-4)	Categorization & Reporting	Rule-Based Categorizer, Summary Reports, Charts
 
-{
-  "access_token": "eyJhbGciOiJIUzI1...",
-  "user_id": 1,
-  "email": "you@example.com"
-}
+The application uses Streamlit (for UI + backend logic) and SQLite3 (for local data storage).
+It follows a modular architecture, meaning each function (auth, input, reports) can later be expanded independently.
 
-3. Transactions API
-➤ Add Transaction
+⚙️ 7. Technology Stack
+Layer	Technology	Reason
+Frontend/UI	Streamlit	Simplifies UI + backend in one environment, beginner-friendly, Python-based
+Backend	Python (Streamlit/Flask modules)	Handles data input, categorization logic, and chart rendering
+Database	SQLite3	Lightweight, file-based DB suitable for single-user MVP
+Libraries	Pandas, NLTK, Matplotlib, Seaborn	Used for data manipulation, categorization, and visualization
+Security	JWT (JSON Web Token)	Ensures user authentication and session security
+🧩 8. Module-Wise Explanation
+🔹 Milestone 1: User Authentication & Basic Transaction Input (Weeks 1–2)
+Module 1.1: User Registration
 
-POST /transactions
+Goal: Allow new users to create accounts securely.
 
-{
-  "date": "2025-10-22",
-  "amount": 250.5,
-  "description": "Grocery store",
-  "type": "expense"
-}
+Process:
 
-➤ View Transactions
+User enters name, email, password.
 
-GET /transactions
+Passwords are hashed using bcrypt or Python’s hashlib before saving.
 
-Response:
+Data stored in SQLite table users.
 
-[
-  {
-    "id": 1,
-    "date": "2025-10-22",
-    "amount": 250.5,
-    "description": "Grocery store",
-    "category": "Groceries",
-    "type": "expense"
-  }
-]
+Email uniqueness is enforced.
 
-🔹 Database Schema
-Table: users
-Field	Type	Description
+Output: Confirmation message and stored credentials.
+
+Module 1.2: Login System
+
+Goal: Authenticate registered users.
+
+Process:
+
+Input credentials are verified against stored hashes.
+
+On success, a JWT token or Streamlit session is created.
+
+Invalid credentials prompt an error message.
+
+Security Measures:
+
+JWT-based authentication prevents unauthorized access.
+
+Session timeout after inactivity.
+
+Module 1.3: Profile Management
+
+Goal: Enable users to manage their own financial data.
+
+Features:
+
+Display user profile info.
+
+Update name/email if needed.
+
+Link transaction records to user ID for personalization.
+
+Module 1.4: Manual Transaction Input
+
+Goal: Allow manual entry of dummy transactions.
+
+Interface:
+
+Streamlit form with:
+
+Date picker
+
+Amount input
+
+Description field
+
+Type selector (Income/Expense)
+
+Backend Logic:
+
+Validates numeric and date inputs.
+
+Stores entries in transactions table:
+
+Fields: id, user_id, date, amount, description, type
+
+Outcome: A functioning financial record entry system.
+
+🔹 Milestone 2: Transaction Categorization & Basic Reporting (Weeks 3–4)
+Module 2.1: Automated Categorization
+
+Goal: Classify each transaction based on its description.
+
+Technique:
+
+Uses simple NLP keyword matching with NLTK.
+
+Example:
+
+“Uber ride” → Transport
+
+“Supermarket” → Groceries
+
+“Electric bill” → Utilities
+
+A dictionary of keywords and categories is defined.
+
+Allows manual override through dropdown selection.
+
+Output: Updated transaction record with a category field.
+
+Module 2.2: Spending Summary Reports
+
+Goal: Summarize financial data for insights.
+
+Methods:
+
+Pandas used for data aggregation (groupby by category/date).
+
+Computes:
+
+Total spending per category.
+
+Monthly spending summary.
+
+Income vs Expense comparison.
+
+Visuals:
+
+Pie chart for category-wise distribution.
+
+Bar chart for month-wise trends.
+
+Line chart for income-expense comparison.
+
+Module 2.3: Initial Dashboard View
+
+Goal: Display recent transactions and reports in one view.
+
+Design:
+
+Top section: Summary stats (Total income, Total expense, Balance)
+
+Middle: Last 5 transactions
+
+Bottom: Charts (Pie/Bar using Matplotlib)
+
+Outcome: Interactive visual dashboard with instant updates.
+
+🧭 9. Workflow Diagram
+
+Step-by-step Flow:
+
+User registers → login verified.
+
+Dashboard loads → form to add transaction appears.
+
+User enters transaction → system stores it in SQLite.
+
+Categorization engine runs → tags each entry.
+
+Reports generated → charts and summaries shown.
+
+📂 10. Database Design
+Table 1: users
+Column	Type	Description
 id	INTEGER	Primary key
-email	TEXT	Unique email
-password_hash	TEXT	Hashed password
-Table: transactions
-Field	Type	Description
+name	TEXT	User name
+email	TEXT	Unique
+password_hash	TEXT	Encrypted password
+Table 2: transactions
+Column	Type	Description
 id	INTEGER	Primary key
-user_id	INTEGER	Foreign key to users
+user_id	INTEGER	Linked to users.id
 date	TEXT	Transaction date
-amount	REAL	Expense amount
-description	TEXT	Transaction details
-category	TEXT	Auto-inferred or user-assigned
-type	TEXT	'income' or 'expense'
-🔹 Testing (PowerShell)
+amount	FLOAT	Amount spent/earned
+description	TEXT	Transaction note
+type	TEXT	Income/Expense
+category	TEXT	Auto-assigned or manual
+🔍 11. Testing & Validation
+Test Case	Description	Expected Result
+User registration	New user signup	Success with stored record
+Login validation	Wrong password	Access denied
+Transaction input	Valid data	Stored successfully
+Categorization	"Bus fare"	Category = Transport
+Report generation	Multiple entries	Aggregated summary displayed
+🚀 12. Challenges Faced
 
-Used PowerShell’s Invoke-RestMethod to test all routes:
+Designing modular authentication within Streamlit environment.
 
-# Register
-Invoke-RestMethod -Method Post -Uri 'http://localhost:5000/auth/register' `
--ContentType 'application/json' `
--Body '{ "email": "you@example.com", "password": "testpass" }'
+Ensuring session-based data persistence.
 
-# Login
-$r = Invoke-RestMethod -Method Post -Uri 'http://localhost:5000/auth/login' `
--ContentType 'application/json' `
--Body '{ "email": "you@example.com", "password": "testpass" }'
-$headers = @{ Authorization = "Bearer $($r.access_token)" }
+Fine-tuning keyword-based categorization accuracy.
 
-# Add Transaction
-Invoke-RestMethod -Method Post -Uri 'http://localhost:5000/transactions' `
--ContentType 'application/json' -Headers $headers `
--Body '{ "date":"2025-10-22", "amount":250.5, "description":"Grocery store", "type":"expense" }'
+Managing database schema evolution without data loss.
 
+🧩 13. Achievements (Up to Milestone 2)
 
-✅ Milestone 1 Completed
+Secure user registration & login working.
 
-The backend is fully functional, secure, and connected to the database.
-All endpoints have been tested successfully using PowerShell.
+Functional transaction input form.
 
-📍 Milestone 2: Streamlit Frontend (Interactive Dashboard)
-🔹 Goal
+Categorization engine integrated.
 
-To design a user-friendly frontend using Streamlit that:
+Visual summaries generated successfully.
 
-Connects to backend APIs
-
-Allows CSV uploads for expenses
-
-Displays data insights and visualizations
-
-🔹 Features Implemented
-1. Streamlit App Structure
-
-File: frontend/streamlit_app.py
-
-Key sections:
-
-Login form (connects to Flask backend)
-
-CSV upload option
-
-Expense table preview
-
-Graphical visualization (spending over time)
-
-2. CSV Upload Functionality
-
-Users can upload a CSV file with columns such as:
-
-date,amount,description,type
-2025-10-01,5000,Salary,income
-2025-10-02,250,Groceries,expense
-2025-10-03,1200,Electricity Bill,expense
-
-
-Streamlit automatically reads it into a DataFrame and shows:
-
-Total Income
-
-Total Expense
-
-Balance
-
-Monthly Spending Chart
-
-3. Data Visualization
-
-Using Plotly/Matplotlib, charts are generated:
-
-Line chart showing daily expenses
-
-Pie chart showing category-wise spending
-
-🔹 Example Dashboard Sections
-Section	Description
-Header	App name and short intro
-Login	Email + Password
-Upload Section	Upload and preview CSV
-Analytics	Expense vs Income charts
-Summary Metrics	Total spent, total income, net balance
-
-✅ Milestone 2 Completed
-
-Frontend successfully connects with backend.
-Users can upload data, visualize it, and manage expenses in a simple interface.
+Initial dashboard interface completed.
