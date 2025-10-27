@@ -1,10 +1,3 @@
-# frontend/streamlit_app.py
-"""
-Streamlit frontend for AI Expense Forecasting Tool
-Fixed Version: Working transaction table with proper styling
-Fully compliant with Milestone 2 requirements
-"""
-
 import streamlit as st
 import requests
 import pandas as pd
@@ -723,9 +716,7 @@ def main():
     st.title("💰 BudgetWise AI - Expense Forecaster")
     st.markdown("**AI-Powered Expense Tracking & Automatic Categorization**")
     
-    # Milestone 2 Feature Highlight
-    st.info("🎯 **MILESTONE 2 ACHIEVED**: AI automatically categorizes transactions based on descriptions! "
-           "Just enter a description and let the AI do the work.")
+  
     
     # Render sidebar
     render_sidebar()
