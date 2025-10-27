@@ -1,14 +1,25 @@
-import sqlite3, os
-sql_file = os.path.join(os.path.dirname(__file__), "init_db.sql")
-db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "expense.db"))
-os.makedirs(os.path.dirname(db_path), exist_ok=True)
+import sqlite3
+import os
 
-with open(sql_file, 'r', encoding='utf-8') as f:
-    sql = f.read()
+# Define DB path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_DIR = os.path.join(BASE_DIR, '..', 'data')
+DB_PATH = os.path.join(DB_DIR, 'expense.db')
+SQL_PATH = os.path.join(BASE_DIR, 'init_db.sql')
 
-conn = sqlite3.connect(db_path)
-c = conn.cursor()
-c.executescript(sql)
-conn.commit()
-conn.close()
-print("DB initialized at", db_path)
+# Make sure data folder exists
+os.makedirs(DB_DIR, exist_ok=True)
+
+def init_db():
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        print(f"Connected to database at {DB_PATH}")
+
+        with open(SQL_PATH, 'r', encoding='utf-8') as f:
+            sql_script = f.read()
+        cursor.executescript(sql_script)
+        conn.commit()
+        print("Database initialized successfully!")
+
+if __name__ == "__main__":
+    init_db()
