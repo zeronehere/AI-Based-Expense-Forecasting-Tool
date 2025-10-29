@@ -740,7 +740,7 @@ def main():
     st.title("💰 BudgetWise AI - Expense Forecaster")
     st.markdown("**AI-Powered Expense Tracking & Automatic Categorization**")
     
-    st.info("🎯 **MILESTONE 1 & 2 COMPLETE**: User Authentication + AI Transaction Categorization!")
+    
     
     render_sidebar()
     
