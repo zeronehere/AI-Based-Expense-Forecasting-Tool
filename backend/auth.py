@@ -9,7 +9,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json(force=True)
-    email = data.get('email')
+    email = (data.get('email') or '').strip().lower()
     pwd = data.get('password')
     if not email or not pwd:
         return jsonify({"msg": "email and password required"}), 400
@@ -29,7 +29,7 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json(force=True)
-    email = data.get('email')
+    email = (data.get('email') or '').strip().lower()
     pwd = data.get('password')
     if not email or not pwd:
         return jsonify({"msg": "email and password required"}), 400

@@ -1,6 +1,6 @@
+# backend/check_tables.py
 import sqlite3, os
 
-# adapt path relative to backend/
 db_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "expense.db"))
 print("DB path:", db_path)
 
