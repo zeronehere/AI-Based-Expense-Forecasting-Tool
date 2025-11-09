@@ -1,11 +1,10 @@
 # backend/categorizer.py
 """
 ENHANCED NLTK-BASED HYBRID CATEGORIZER
-- Improved pattern matching with better context understanding
+- Improved fN matching with better context understanding
 - Enhanced fuzzy matching for typos and variations
 - Better brand and subscription handling
 - Comprehensive financial vocabulary
-- FIXED: Donation now correctly categorized as Miscellaneous
 """
 
 import re

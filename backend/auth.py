@@ -19,11 +19,20 @@ def register():
         return jsonify({"msg": "user exists"}), 400
 
     pwd_hash = generate_password_hash(pwd)
+    
+    # Simple insert - username will be NULL
     user_id = db.execute_db(
         "INSERT INTO users (email, password_hash) VALUES (?, ?)",
         (email, pwd_hash)
     )
-    return jsonify({"msg": "registered", "user_id": user_id}), 201
+    
+    access = create_access_token(identity=str(user_id))
+    return jsonify({
+        "msg": "registered", 
+        "user_id": user_id,
+        "access_token": access,
+        "email": email
+    }), 201
 
 
 @auth_bp.route('/login', methods=['POST'])
