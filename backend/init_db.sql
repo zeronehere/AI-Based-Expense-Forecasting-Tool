@@ -1,3 +1,5 @@
+--backend/init_db.sql
+
 PRAGMA foreign_keys = ON;
 
 -- Create USERS table
@@ -62,3 +64,19 @@ FOR EACH ROW
 BEGIN
     UPDATE financial_goals SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+
+-- -- 🆕 ADMIN USERS TABLE
+-- CREATE TABLE IF NOT EXISTS admin_users (
+--     id INTEGER PRIMARY KEY AUTOINCREMENT,
+--     user_id INTEGER NOT NULL UNIQUE,
+--     role TEXT DEFAULT 'admin' CHECK(role IN ('admin', 'super_admin')),
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+-- );
+
+-- -- 🆕 Insert yourself as admin (replace YOUR_USER_ID with your actual user ID)
+-- -- First, find your user ID from users table, then insert it here
+-- -- Example: INSERT INTO admin_users (user_id, role) VALUES (1, 'super_admin');
+
+-- -- 🆕 Create indexes for better performance
+-- CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id);

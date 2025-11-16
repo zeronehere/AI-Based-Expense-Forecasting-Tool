@@ -1,3 +1,5 @@
+#frondend/streamlit.py
+
 import streamlit as st
 import requests
 import pandas as pd
@@ -456,7 +458,6 @@ def render_dashboard():
         st.info("No recent transactions")
 
     # Category Spending
-    st.subheader("📈 Spending by Category")
     category_data = get_user_category_report(days=90)
     
     if category_data and category_data.get("by_category"):
@@ -464,27 +465,36 @@ def render_dashboard():
         total_expense = category_data.get("total_expense", 0)
         
         if total_expense > 0:
+            # Convert to DataFrame for visualization
             cat_df = pd.DataFrame(by_category)
+            
             col1, col2 = st.columns([2, 1])
             
             with col1:
-                fig_bar = px.bar(cat_df.head(8), x='category', y='total', 
-                               title="Top Spending Categories",
-                               color='total', color_continuous_scale='Blues')
-                fig_bar.update_layout(showlegend=False, template="plotly_white")
-                st.plotly_chart(fig_bar, use_container_width=True)
+                fig_pie = px.pie(
+                    cat_df, 
+                    names='category', 
+                    values='total', 
+                    title="Your AI-Categorized Expense Distribution",
+                    hole=0.4
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
             
             with col2:
+                st.write("**Your Category Breakdown**")
                 breakdown = cat_df.copy()
                 breakdown['percentage'] = (breakdown['total'] / total_expense * 100).round(1)
                 breakdown['total'] = breakdown['total'].map(lambda x: f"₹{x:,.2f}")
-                st.dataframe(breakdown.rename(columns={
-                    'category': 'Category', 'total': 'Amount', 'percentage': '%'
-                }), use_container_width=True, hide_index=True)
+                
+                st.dataframe(
+                    breakdown.rename(columns={'category': 'Category', 'total': 'Amount', 'percentage': '%'}),
+                    use_container_width=True,
+                    hide_index=True
+                )
         else:
-            st.info("No expense data")
+            st.info("No expense data in your account")
     else:
-        st.info("No categorized expense data")
+        st.info("No categorized expense data in your account")
 
 # ---------------- Optimized Reports Tab ----------------
 def render_reports():
@@ -764,12 +774,12 @@ def render_goals_list():
                 else:
                     st.error("❌ Please fill in all required fields")
     
-    # Debug button to check goals
-    if st.button("🐛 Debug Goals", key="debug_goals"):
-        r = api_request("GET", "/debug/goals", token=st.session_state.token)
-        if r and r.status_code == 200:
-            debug_data = safe_json(r)
-            st.write("🔍 Debug Info:", debug_data)
+    # # Debug button to check goals
+    # if st.button("🐛 Debug Goals", key="debug_goals"):
+    #     r = api_request("GET", "/debug/goals", token=st.session_state.token)
+    #     if r and r.status_code == 200:
+    #         debug_data = safe_json(r)
+    #         st.write("🔍 Debug Info:", debug_data)
     
     # Load goals
     if st.session_state.get('goals_data') is None:

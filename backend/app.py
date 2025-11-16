@@ -1,3 +1,5 @@
+# backend/app.py
+
 import os
 import csv
 import io
@@ -66,16 +68,32 @@ def row_to_dict(row):
     except Exception:
         return {col: row[col] for col in row.keys()} if hasattr(row, 'keys') else {}
 
+# 🆕 Fixed Admin helper - only check admin table
+def is_admin_user(user_id):
+    """Check if user is admin - UPDATED FOR HARCODED ADMIN"""
+    try:
+        # Get user email
+        user = db.query_db("SELECT email FROM users WHERE id=?", (user_id,), one=True)
+        
+        # Check if it's the hardcoded admin email
+        if user and user['email'] == 'admin@budgetwise.com':
+            return True
+            
+        return False
+    except Exception as e:
+        logger.error(f"Admin check failed: {e}")
+        return False
+
 # ---------------- Flask App Factory ----------------
 def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', os.urandom(24).hex())
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', "dev-key-for-mini-project-only")
     JWTManager(app)
     
     # CORS
-    cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:8501')
+    cors_origins = os.environ.get('CORS_ORIGINS', 'http://localhost:8501,http://localhost:8502')
     origins = [o.strip() for o in cors_origins.split(",") if o.strip()]
     CORS(app, resources={r"/*": {"origins": origins}}, supports_credentials=True)
     
@@ -747,6 +765,376 @@ def create_app():
             "analytics": analytics
         })
     
+    # ---------------- Admin Endpoints ----------------
+    @app.route('/admin/check-access', methods=['GET'])
+    @jwt_required()
+    def admin_check_access():
+        """Check if user has admin access"""
+        user_id = int(get_jwt_identity())
+        is_admin = is_admin_user(user_id)
+        
+        # Also get user email for display
+        user = db.query_db("SELECT email FROM users WHERE id=?", (user_id,), one=True)
+        user_email = user['email'] if user else None
+        
+        return jsonify({
+            "is_admin": is_admin,
+            "user_email": user_email
+        })
+
+    @app.route('/admin/users', methods=['GET'])
+    @jwt_required()
+    def admin_get_users():
+        """Get all users (admin only) - EXCLUDES ADMIN USER"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            # 🆕 UPDATED: Exclude admin user from the list
+            users = db.query_db('''
+                SELECT u.id, u.email, u.created_at, 
+                    COUNT(t.id) as transaction_count,
+                    MAX(t.date) as last_transaction_date
+                FROM users u
+                LEFT JOIN transactions t ON u.id = t.user_id
+                WHERE u.email != 'admin@budgetwise.com'  -- 🆕 CHANGED: Exclude hardcoded admin
+                GROUP BY u.id
+                ORDER BY u.created_at DESC
+            ''')
+            
+            users_list = []
+            for user in users:
+                user_dict = dict(user)
+                # Convert dates to string for JSON
+                if user_dict['created_at']:
+                    user_dict['created_at'] = str(user_dict['created_at'])
+                if user_dict['last_transaction_date']:
+                    user_dict['last_transaction_date'] = str(user_dict['last_transaction_date'])
+                users_list.append(user_dict)
+            
+            return jsonify({
+                "success": True,
+                "users": users_list,
+                "total_users": len(users_list)
+            })
+        except Exception as e:
+            logger.error(f"Admin users fetch failed: {e}")
+            return jsonify({"error": "Failed to fetch users"}), 500
+    
+    @app.route('/admin/transactions', methods=['GET'])
+    @jwt_required()
+    def admin_get_all_transactions():
+        """Get all transactions across all users (admin only) - EXCLUDES ADMIN TRANSACTIONS"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            limit = min(int(request.args.get('limit', 100)), 1000)  # Max 1000 for safety
+            
+            # 🆕 UPDATED: Exclude admin user's transactions
+            transactions = db.query_db('''
+                SELECT t.*, u.email as user_email
+                FROM transactions t
+                JOIN users u ON t.user_id = u.id
+                WHERE u.email != 'admin@budgetwise.com'  -- 🆕 CHANGED: Exclude hardcoded admin
+                ORDER BY t.date DESC
+                LIMIT ?
+            ''', (limit,))
+            
+            transactions_list = []
+            for tx in transactions:
+                tx_dict = dict(tx)
+                # Convert date for JSON
+                if tx_dict['date']:
+                    tx_dict['date'] = str(tx_dict['date'])
+                transactions_list.append(tx_dict)
+            
+            return jsonify({
+                "success": True,
+                "transactions": transactions_list,
+                "total_shown": len(transactions_list)
+            })
+        except Exception as e:
+            logger.error(f"Admin transactions fetch failed: {e}")
+            return jsonify({"error": "Failed to fetch transactions"}), 500
+
+    @app.route('/admin/analytics', methods=['GET'])
+    @jwt_required()
+    def admin_get_analytics():
+        """Get system analytics (admin only) - EXCLUDES ADMIN DATA"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            # 🆕 UPDATED: All analytics exclude admin user and their data
+            
+            # User statistics (exclude admin user)
+            total_users = db.query_db(
+                "SELECT COUNT(*) as count FROM users WHERE email != 'admin@budgetwise.com'",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            active_users = db.query_db(
+                "SELECT COUNT(DISTINCT user_id) as count FROM transactions WHERE date >= date('now', '-30 days') AND user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            # Transaction statistics (exclude admin transactions)
+            total_transactions = db.query_db(
+                "SELECT COUNT(*) as count FROM transactions WHERE user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            transactions_today = db.query_db(
+                "SELECT COUNT(*) as count FROM transactions WHERE date = date('now') AND user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            # Category statistics (exclude admin transactions)
+            popular_categories = db.query_db('''
+                SELECT category, COUNT(*) as count 
+                FROM transactions 
+                WHERE type = 'expense' AND user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')  -- 🆕 CHANGED
+                GROUP BY category 
+                ORDER BY count DESC 
+                LIMIT 5
+            ''')
+            
+            # Goal statistics (exclude admin goals)
+            total_goals = db.query_db(
+                "SELECT COUNT(*) as count FROM financial_goals WHERE user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            completed_goals = db.query_db(
+                "SELECT COUNT(*) as count FROM financial_goals WHERE current_amount >= target_amount AND user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                one=True
+            )['count']
+            
+            return jsonify({
+                "success": True,
+                "analytics": {
+                    "users": {
+                        "total": total_users,
+                        "active_last_30_days": active_users,
+                        "inactive": total_users - active_users
+                    },
+                    "transactions": {
+                        "total": total_transactions,
+                        "today": transactions_today,
+                        "avg_per_user": round(total_transactions / max(total_users, 1), 2)
+                    },
+                    "goals": {
+                        "total": total_goals,
+                        "completed": completed_goals,
+                        "completion_rate": round((completed_goals / max(total_goals, 1)) * 100, 2)
+                    },
+                    "popular_categories": [dict(cat) for cat in popular_categories],
+                    "system": {
+                        "database_size": "N/A",
+                        "last_updated": datetime.now().isoformat()
+                    }
+                }
+            })
+        except Exception as e:
+            logger.error(f"Admin analytics fetch failed: {e}")
+            return jsonify({"error": "Failed to fetch analytics"}), 500
+
+    # 🆕 NEW: Category Management Endpoints
+    @app.route('/admin/categories', methods=['GET'])
+    @jwt_required()
+    def admin_get_categories():
+        """Get all categories and their usage statistics"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            # Get category usage statistics
+            categories = db.query_db('''
+                SELECT 
+                    category,
+                    COUNT(*) as transaction_count,
+                    SUM(amount) as total_amount,
+                    AVG(amount) as avg_amount,
+                    COUNT(DISTINCT user_id) as unique_users,
+                    MIN(date) as first_used,
+                    MAX(date) as last_used
+                FROM transactions 
+                WHERE user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')  -- 🆕 CHANGED
+                GROUP BY category
+                ORDER BY transaction_count DESC
+            ''')
+            
+            categories_list = []
+            for cat in categories:
+                cat_dict = dict(cat)
+                # Convert dates to string
+                if cat_dict['first_used']:
+                    cat_dict['first_used'] = str(cat_dict['first_used'])
+                if cat_dict['last_used']:
+                    cat_dict['last_used'] = str(cat_dict['last_used'])
+                categories_list.append(cat_dict)
+            
+            return jsonify({
+                "success": True,
+                "categories": categories_list,
+                "total_categories": len(categories_list)
+            })
+        except Exception as e:
+            logger.error(f"Admin categories fetch failed: {e}")
+            return jsonify({"error": "Failed to fetch categories"}), 500
+
+    @app.route('/admin/categories/update', methods=['POST'])
+    @jwt_required()
+    def admin_update_categories():
+        """Update transaction categories in bulk"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            data = request.get_json(force=True)
+            old_category = data.get('old_category')
+            new_category = data.get('new_category')
+            
+            if not old_category or not new_category:
+                return jsonify({"error": "Both old_category and new_category are required"}), 400
+            
+            # Update transactions with the old category
+            updated_count = db.execute_db(
+                "UPDATE transactions SET category = ? WHERE category = ? AND user_id IN (SELECT id FROM users WHERE email != 'admin@budgetwise.com')",  # 🆕 CHANGED
+                (new_category, old_category)
+            )
+            
+            logger.info(f"Admin {user_id} updated {updated_count} transactions from '{old_category}' to '{new_category}'")
+            
+            return jsonify({
+                "success": True,
+                "message": f"Updated {updated_count} transactions from '{old_category}' to '{new_category}'",
+                "updated_count": updated_count
+            })
+        except Exception as e:
+            logger.error(f"Admin category update failed: {e}")
+            return jsonify({"error": "Failed to update categories"}), 500
+
+    # 🆕 NEW: System Monitoring Endpoints
+
+    @app.route('/admin/system/health', methods=['GET'])
+    @jwt_required()
+    def admin_system_health():
+        """Get system health and data consistency checks"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            health_checks = {}
+            
+            # Database size check
+            try:
+                db_size = db.query_db("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()", one=True)
+                health_checks['database_size'] = f"{db_size['size'] / (1024*1024):.2f} MB"
+            except:
+                health_checks['database_size'] = "Unknown"
+            
+            # Table row counts
+            tables = ['users', 'transactions', 'financial_goals']  # 🆕 REMOVED: admin_users
+            for table in tables:
+                try:
+                    count = db.query_db(f"SELECT COUNT(*) as count FROM {table}", one=True)
+                    health_checks[f'{table}_count'] = count['count']
+                except:
+                    health_checks[f'{table}_count'] = "Error"
+            
+            # Data consistency checks
+            try:
+                # Check for transactions without users
+                orphaned_transactions = db.query_db(
+                    "SELECT COUNT(*) as count FROM transactions WHERE user_id NOT IN (SELECT id FROM users)",
+                    one=True
+                )
+                health_checks['orphaned_transactions'] = orphaned_transactions['count']
+                
+                # Check for goals without users
+                orphaned_goals = db.query_db(
+                    "SELECT COUNT(*) as count FROM financial_goals WHERE user_id NOT IN (SELECT id FROM users)",
+                    one=True
+                )
+                health_checks['orphaned_goals'] = orphaned_goals['count']
+            except:
+                health_checks['data_consistency'] = "Check failed"
+            
+            # Recent errors from logs (simulated)
+            health_checks['recent_errors'] = 0
+            health_checks['system_status'] = "Healthy"
+            
+            # Performance metrics
+            health_checks['server_uptime'] = "N/A"
+            health_checks['last_backup'] = "Not implemented"
+            
+            return jsonify({
+                "success": True,
+                "health_checks": health_checks,
+                "timestamp": datetime.now().isoformat()
+            })
+        except Exception as e:
+            logger.error(f"Admin system health check failed: {e}")
+            return jsonify({"error": "Failed to check system health"}), 500
+
+    @app.route('/admin/system/cleanup', methods=['POST'])
+    @jwt_required()
+    def admin_system_cleanup():
+        """Perform system cleanup tasks"""
+        user_id = int(get_jwt_identity())
+        if not is_admin_user(user_id):
+            return jsonify({"error": "Admin access required"}), 403
+        
+        try:
+            data = request.get_json(force=True) or {}
+            cleanup_type = data.get('type', 'all')
+            
+            cleanup_results = {}
+            
+            if cleanup_type in ['orphaned', 'all']:
+                # Clean up orphaned transactions
+                orphaned_tx = db.execute_db(
+                    "DELETE FROM transactions WHERE user_id NOT IN (SELECT id FROM users)"
+                )
+                cleanup_results['orphaned_transactions_removed'] = orphaned_tx
+                
+                # Clean up orphaned goals
+                orphaned_goals = db.execute_db(
+                    "DELETE FROM financial_goals WHERE user_id NOT IN (SELECT id FROM users)"
+                )
+                cleanup_results['orphaned_goals_removed'] = orphaned_goals
+            
+            if cleanup_type in ['test_data', 'all']:
+                # Optional: Clean up test data (you can customize this)
+                test_users = db.execute_db(
+                    "DELETE FROM users WHERE email LIKE '%test%' OR email LIKE '%example%'"
+                )
+                cleanup_results['test_users_removed'] = test_users
+            
+            logger.info(f"Admin {user_id} performed system cleanup: {cleanup_results}")
+            
+            return jsonify({
+                "success": True,
+                "message": "System cleanup completed",
+                "cleanup_results": cleanup_results
+            })
+        except Exception as e:
+            logger.error(f"Admin system cleanup failed: {e}")
+            return jsonify({"error": "Failed to perform system cleanup"}), 500
+
+    @app.route('/admin/promote-to-admin', methods=['POST'])
+    @jwt_required()
+    def admin_promote_user():
+        pass
+
     # ---------------- Debug Endpoints ----------------
     @app.route('/debug/goals', methods=['GET'])
     @jwt_required()
