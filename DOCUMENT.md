@@ -1,265 +1,832 @@
-🧾 AI Expense Forecasting Tool — Detailed Project Documentation (Milestone 1 & 2)
-🏁 1. Abstract
+BudgetWise AI - Expense Forecaster
+
+1. Project Overview
+====================
+
+1.1 Executive Summary
+---------------------
+BudgetWise AI is an intelligent expense forecasting and personal financial management platform that leverages artificial intelligence to help individuals and businesses gain control over their finances. The system combines automated transaction categorization, advanced forecasting algorithms, and goal-oriented financial planning to provide actionable insights and predictions.
+
+1.2 Key Value Propositions
+--------------------------
+>AI-Powered Categorization: Automatic transaction classification using NLP and machine learning
+>Intelligent Forecasting: Advanced time-series prediction using Prophet and statistical models
+>Goal Management: AI-driven financial goal setting and achievement coaching
+>Real-time Analytics: Comprehensive spending analysis and visualization
+
+
+1.3 Technical Achievement
+-------------------------
+>The project successfully implements a full-stack AI financial platform with:
+>Backend: Python Flask REST API with SQLite database
+>Frontend: Streamlit-based interactive dashboard
+>AI/ML: Integration of Prophet, NLTK, and custom forecasting algorithms
+>Security: JWT-based authentication and data encryption
+>Deployment: Container-ready architecture
+
+2. System Architecture
+=======================
+
+2.1 High-Level Architecture Diagram
+------------------------------------
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit     │    │   Flask REST     │    │   SQLite        │
+│   Frontend      │◄──►│   API Backend    │◄──►│   Database      │
+│                 │    │                  │    │                 │
+│ • Dashboard     │    │ • Authentication │    │ • Users         │
+│ • Transactions  │    │ • Transactions   │    │ • Transactions  │
+│ • Forecasting   │    │ • Forecasting    │    │ • Goals         │
+│ • Goals         │    │ • Goals          │    │ • Categories    │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Plotly        │    │   AI/ML Engine   │    │   File System   │
+│   Visualizations│    │                  │    │                 │
+│                 │    │ • NLTK Categorizer│    │ • CSV Uploads   │
+│ • Charts        │    │ • Prophet Forecaster│  │ • Logs         │
+│ • Graphs        │    │ • Goal Coach     │    │ • Cache         │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+
+
+2.2 Component Architecture
+---------------------------
+
+Client Layer (Streamlit)
+    │
+    ▼
+API Gateway (Flask Backend)
+    ├── Authentication Module
+    ├── Transaction Management
+    ├── Forecasting Engine
+    ├── Goals Management
+    └── Admin Interface
+        │
+        ▼
+Data Layer
+    ├── SQLite Database
+    ├── Caching System
+    └── File Storage
+        │
+        ▼
+AI/ML Services
+    ├── NLTK Categorizer
+    ├── Prophet Forecaster
+    └── Goal Coaching Engine
+
+
+
+
+3. System Requirements & Problem Statement
+===========================================
+
+3.1 Problem Statement
+----------------------
+>Current Challenges in Personal Finance Management:
+>Manual expense tracking is time-consuming and error-prone
+>Lack of intelligent categorization leads to poor spending insights
+>Difficulty in predicting future expenses and cash flow
+>No AI-driven guidance for financial goal achievement
+>Limited real-time budget monitoring and alerts
+
+3.2 Solution Objectives
+------------------------
+>Automated Processing: AI-powered transaction categorization
+>Predictive Analytics: Advanced expense forecasting
+>Goal-Oriented Planning: AI coaching for financial targets
+>Real-time Monitoring: Live dashboards and alerts
+>Multi-user Support: Individual and administrative views
+
+3.3 Functional Requirements
+---------------------------
+
+Module	                |   Requirements
+---------------------------------------------------------------------------------
+User Management	        |   Registration, login, profile management
+Transaction Handling	|   Manual entry, CSV upload, categorization
+Forecasting	            |   Time-series prediction, trend analysis
+Goals Management	    |   Goal creation, progress tracking, AI coaching
+Reporting	            |   Category analysis, monthly summaries, insights
+Administration	        |   User management, system analytics, category management
+
+
+3.4 Non-Functional Requirements
+--------------------------------
+
+>Performance: Sub-second response for most operations
+>Security: JWT authentication, data encryption
+>Scalability: Support for multiple concurrent users
+>0Usability: Intuitive interface with minimal learning curve
+>Reliability: 99% uptime with proper error handling
+
+4. Technology Stack
+====================
+
+4.1 Backend Technologies
+-------------------------
+Component	        Technology	                Purpose
+Framework	        Python Flask	            REST API development
+Database	        SQLite	                    Data persistence
+Authentication	    JWT	                        Secure user authentication
+ML Framework	    Prophet, scikit-learn	    Forecasting and categorization
+NLP Library	        NLTK	                    Transaction description processing
+Data Processing	    Pandas, NumPy	            Financial data analysis
+
+
+4.2 Frontend Technologies
+--------------------------
+Component	        Technology	        Purpose
+Framework	        Streamlit	        Web application interface
+Visualization	    Plotly, Matplotlib	Charts and graphs
+UI Components	    Streamlit native	Forms, tables, navigation
+Styling	            Custom CSS	        Interface theming
+
+
+4.3 Development & Deployment
+----------------------------
+Area	            Tools/Technologies
+Version             Control	Git
+API Testing	        Postman, requests
+Containerization	Docker
+Deployment	        Local hosting, cloud-ready
+
+
+5. Database Design
+====================
+
+5.1 Database Schema
+--------------------
+Table: users
+............
+
+Column	            Type	            Constraints	            Description
+id	                INTEGER	            PRIMARY KEY	            Unique user identifier
+username	        TEXT	            NULLABLE	            User display name
+email	            TEXT	            UNIQUE, NOT NULL	    User email for login
+password_hash	    TEXT	            NOT NULL	            Encrypted password
+created_at	        TIMESTAMP	        CURRENT_TIMESTAMP	    Account creation date
 
-In the modern world, managing personal finances has become increasingly complex due to the growing number of digital transactions, multiple payment modes, and unpredictable spending habits. The AI Expense Forecasting Tool is designed to simplify financial management by helping users record, categorize, and analyze their income and expenses.
-The system provides an interactive web-based interface built using Streamlit or Flask, enabling users to manually input transactions and view their categorized spending reports.
+
+
+Table: transactions
+....................
+
+Column	            Type	            Constraints	            Description
+id	I               NTEGER	            PRIMARY KEY	            Transaction identifier
+user_id	            INTEGER	            FOREIGN KEY	            Associated user
+date	            DATE	            NOT NULL	            Transaction date
+amount	            DECIMAL(10,2)	    NOT NULL	            Transaction amount
+description	        TEXT	            NULLABLE	            Transaction description
+category	        TEXT	            NULLABLE	            AI-categorized spending 
+type	            TEXT	            CHECK(income/expense)	Transaction type
+created_at	        TIMESTAMP	        CURRENT_TIMESTAMP	    Record creation timestamp
 
-By the completion of Milestone 1 and 2, the project achieves the ability to:
 
-Authenticate users through secure registration and login.
+Table: financial_goals
+.......................
 
-Allow manual transaction input.
+Column	            Type	                Constraints	            Description
+id	                INTEGER	                PRIMARY KEY	            Goal identifier
+user_id	            INTEGER	FOREIGN KEY	    Goal                    owner
+goal_name	        TEXT	                NOT NULL	            Goal description
+goal_type	        TEXT	                CHECK	                Goal category
+target_amount	    DECIMAL(10,2)	        NOT NULL	            Target amount
+current_amount	    DECIMAL(10,2)	        DEFAULT 0	            Current progress
+target_date	        DATE	                NOT NULL                Goal deadline
+category	        TEXT	                NULLABLE	            Associated spending 
+description	        TEXT	                NULLABLE	            Goal details
+created_at	        TIMESTAMP	            CURRENT_TIMESTAMP	    Creation timestamp
+updated_at	        TIMESTAMP	            CURRENT_TIMESTAMP	    Last update timestamp
 
-Automatically categorize expenses using keyword-based NLP.
 
-Generate visual summaries of spending behavior through basic analytics and charts.
+Table: goal_savings
+....................
 
-These foundational features lay the groundwork for more advanced forecasting modules to be built in later milestones.
+Column	            Type            Constraints	            Description
+id	                INTEGER	        PRIMARY KEY	            Savings record ID
+goal_id	            INTEGER	        FOREIGN KEY	            Associated goal
+amount	            DECIMAL(10,2)	NOT NULL	            Savings amount
+saved_date	        DATE	        NOT NULL	            Savings date
+description	        TEXT	        NULLABLE	            Savings note
+created_at	        TIMESTAMP	    CURRENT_TIMESTAMP	    Record timestamp
 
-🎯 2. Aim
 
-To design and develop a personal financial management system that enables users to record, categorize, and visualize their expenses and income securely, forming the foundation for future AI-driven expense prediction.
+5.3 Indexes and Optimization
+-----------------------------
 
-📘 3. Objectives
+Performance indexes
+....................
 
-To create a user authentication system ensuring secure access to personalized financial data.
+CREATE INDEX idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX idx_transactions_date ON transactions(date);
+CREATE INDEX idx_financial_goals_user_id ON financial_goals(user_id);
+CREATE INDEX idx_goal_savings_goal_id ON goal_savings(goal_id);
 
-To build an interface that allows manual entry of transaction data.
+Auto-update timestamp trigger
+..............................
 
-To develop a basic rule-based categorization model to classify transactions (Groceries, Rent, Travel, etc.).
+CREATE TRIGGER update_financial_goals_timestamp 
+AFTER UPDATE ON financial_goals
+FOR EACH ROW
+BEGIN
+    UPDATE financial_goals SET updated_at = CURRENT_TIMESTAMP 
+    WHERE id = NEW.id;
+END;
 
-To provide visual spending summaries using analytical graphs.
 
-To maintain scalable architecture, allowing future integration of AI/ML-based forecasting modules.
 
-💡 4. Problem Definition
+6. Module Specifications
+=========================
 
-Managing personal finance manually using spreadsheets or notes is inefficient and error-prone. Users often fail to track where their money goes, leading to poor budgeting and uncontrolled expenses.
+6.1 Authentication Module
+--------------------------
 
-Existing apps are either too complex or paid, leaving a gap for a simple, open-source, educational, and extendable expense manager that can later support intelligent financial predictions.
+Purpose: Secure user registration, login, and session management
 
-Thus, the problem addressed is:
+Key Features:
+..............
+>JWT-based authentication
+>Password hashing with Werkzeug security
+>Session management with token expiration
+>Admin user detection and privileges
 
-“How to design a simple, modular, and secure system that allows users to input, categorize, and analyze their spending behavior effectively.”
+Endpoints:
+...........
 
-💪 5. Motivation
+>POST /auth/register - User registration
+>POST /auth/login - User authentication
+>JWT-protected routes for all subsequent requests
 
-The project was inspired by:
+6.2 Transaction Management Module
+-----------------------------------
 
-The lack of free, transparent tools for expense tracking.
+Purpose: Handle all financial transaction operations
 
-The desire to build a foundation for AI-based financial forecasting using real or dummy datasets.
+Key Features:
+..............
 
-The need for an MVP (Minimum Viable Product) that demonstrates integration of authentication, user data management, NLP-based categorization, and visualization.
+>Manual transaction entry with AI categorization
+>Bulk CSV upload with automated processing
+>Transaction categorization using NLP
+>Category override and manual correction
+>Transaction history with filtering and sorting
+>AI Categorization Process:
 
-🧠 6. System Overview
 
-The system consists of two main phases (Milestone 1 and 2):
+Transaction Description → Text Processing → Pattern Matching → Category Assignment
+         ↓                     ↓                  ↓                ↓
+    "Amazon Prime       → Tokenization →   Match "amazon"   →  "Shopping"
+    Subscription"           & NLP          + "subscription"      
 
-Milestone	Focus	Key Deliverables
-1 (Weeks 1-2)	User Authentication & Manual Input	Registration, Login, Profile, Transaction Form
-2 (Weeks 3-4)	Categorization & Reporting	Rule-Based Categorizer, Summary Reports, Charts
 
-The application uses Streamlit (for UI + backend logic) and SQLite3 (for local data storage).
-It follows a modular architecture, meaning each function (auth, input, reports) can later be expanded independently.
 
-⚙️ 7. Technology Stack
-Layer	Technology	Reason
-Frontend/UI	Streamlit	Simplifies UI + backend in one environment, beginner-friendly, Python-based
-Backend	Python (Streamlit/Flask modules)	Handles data input, categorization logic, and chart rendering
-Database	SQLite3	Lightweight, file-based DB suitable for single-user MVP
-Libraries	Pandas, NLTK, Matplotlib, Seaborn	Used for data manipulation, categorization, and visualization
-Security	JWT (JSON Web Token)	Ensures user authentication and session security
-🧩 8. Module-Wise Explanation
-🔹 Milestone 1: User Authentication & Basic Transaction Input (Weeks 1–2)
-Module 1.1: User Registration
 
-Goal: Allow new users to create accounts securely.
+6.3 AI Forecasting Module
+--------------------------
 
-Process:
+Purpose: Generate expense predictions using advanced algorithms
 
-User enters name, email, password.
+Key Components:
+...............
 
-Passwords are hashed using bcrypt or Python’s hashlib before saving.
+>Prophet Integration: Facebook's forecasting library for time-series data
+>Simple Fallback Model: Moving average-based forecasting when Prophet unavailable
+>Anomaly Detection: Z-score based outlier identification
+>Seasonality Analysis: Weekly, monthly, and yearly pattern recognition
 
-Data stored in SQLite table users.
+Forecasting Process:
+.....................
 
-Email uniqueness is enforced.
 
-Output: Confirmation message and stored credentials.
+Historical Data → Data Preparation → Model Training → Forecast Generation → Results Formatting
+      ↓               ↓                 ↓                 ↓                    ↓
+ Transaction    Aggregate by     Train Prophet    Generate future    Format for frontend
+    Data          time period      model           predictions        visualization
 
-Module 1.2: Login System
 
-Goal: Authenticate registered users.
+6.4 Goals Management Module
+----------------------------
+
+Purpose: Financial goal setting, tracking, and AI coaching
 
-Process:
+Key Features:
+..............
 
-Input credentials are verified against stored hashes.
+>Goal creation with target amounts and deadlines
+>Progress tracking with visual indicators
+>Savings contribution system
+>AI-powered goal coaching and feasibility analysis
+>Goal analytics and completion metrics
 
-On success, a JWT token or Streamlit session is created.
+AI Coaching Analysis:
+......................
 
-Invalid credentials prompt an error message.
+>Financial capacity assessment
+>Success probability calculation
+>Actionable recommendation generation
+>Timeline feasibility analysis
 
-Security Measures:
+6.5 Administration Module
+-------------------------
 
-JWT-based authentication prevents unauthorized access.
+Purpose: System management and user oversight
+
+Key Features:
+..............
+
+>User management and activity monitoring
+>System analytics and health checks
+>Category management and normalization
+>Data cleanup and maintenance operations
+>Transaction oversight across all users
 
-Session timeout after inactivity.
+7. Use Case Diagrams
+======================
 
-Module 1.3: Profile Management
+7.1 User Use Case Diagram
+--------------------------
 
-Goal: Enable users to manage their own financial data.
+┌─────────────────────────────────────────────────────────────┐
+│                       User Use Cases                        │
+└─────────────────────────────────────────────────────────────┘
+                            │
+    ┌───────────────────────┼───────────────────────┐
+    │                       │                       │
+    ▼                       ▼                       ▼
+┌─────────┐           ┌─────────────┐         ┌───────────┐
+│ Manage  │           │ View        │         │ Set &     │
+│Transactions│        │ Analytics   │         │ Track Goals│
+└─────────┘           └─────────────┘         └───────────┘
+    │                       │                       │
+    ├─ Add Transaction      ├─ View Dashboard       ├─ Create Goal
+    ├─ Upload CSV           ├─ Generate Reports     ├─ Add Savings
+    ├─ Categorize Tx        ├─ View Forecasts       ├─ Get AI Coaching
+    └─ Edit Categories      └─ Export Data          └─ Delete Goal
+
+
+7.2 Administrator Use Case Diagram
+-----------------------------------
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                   Administrator Use Cases                   │
+└─────────────────────────────────────────────────────────────┘
+                            │
+    ┌───────────────────────┼───────────────────────┐
+    │                       │                       │
+    ▼                       ▼                       ▼
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│ Manage      │         │ System      │         │ Data        │
+│ Users       │         │ Analytics   │         │ Management  │
+└─────────────┘         └─────────────┘         └─────────────┘
+    │                       │                       │
+    ├─ View All Users       ├─ System Health        ├─ Category Mgmt
+    ├─ Monitor Activity     ├─ Performance Metrics  ├─ Data Cleanup
+    ├─ Access Control       ├─ Usage Statistics     ├─ Backup Operations
+    └─ User Analytics       └─ Revenue Reports      └─ Audit Logs
+
+
+
+7.3 System Use Case Diagram
+----------------------------
+
+
+┌─────────────────────────────────────────────────────────────┐
+│                     System Use Cases                        │
+└─────────────────────────────────────────────────────────────┘
+                            │
+    ┌───────────────────────┼───────────────────────┐
+    │                       │                       │
+    ▼                       ▼                       ▼
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│   AI/ML     │         │   Data      │         │   Security  │
+│  Services   │         │ Processing  │         │   & Auth    │
+└─────────────┘         └─────────────┘         └─────────────┘
+    │                       │                       │
+    ├─ Categorize Transactions├─ Aggregate Data     ├─ Authenticate Users
+    ├─ Generate Forecasts    ├─ Calculate Metrics   ├─ Authorize Access
+    ├─ Analyze Goals         ├─ Cache Management    ├─ Encrypt Data
+    └─ Detect Anomalies      └─ Data Validation    └─ Session Management
+
+
+
+8. Workflow Diagrams
+======================
+
+8.1 User Registration & Login Workflow
+---------------------------------------
+
+
+┌───────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│   User    │───▶│  Enter       │───▶│  Validate    │───▶│  Create     │
+│  Access   │    │  Credentials │    │  Inputs      │    │  Account    │
+└───────────┘    └──────────────┘    └──────────────┘    └─────────────┘
+                       │                                      │
+                       │                                      ▼
+                       │                              ┌─────────────┐
+                       │                              │  Generate   │
+                       │                              │  JWT Token  │
+                       │                              └─────────────┘
+                       │                                      │
+                       ▼                                      ▼
+                ┌──────────────┐                      ┌─────────────┐
+                │  Display     │                      │  Redirect   │
+                │  Error Msg   │                      │  to Dashboard│
+                └──────────────┘                      └─────────────┘
 
-Features:
+
+8.2 Transaction Processing Workflow
+------------------------------------
 
-Display user profile info.
 
-Update name/email if needed.
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Transaction │───▶│  Preprocess   │───▶│  AI          │───▶│  Store in   │
+│  Input       │    │  & Validate   │    │  Categorization│    │  Database   │
+└─────────────┘    └──────────────┘    └──────────────┘    └─────────────┘
+        │                  │                    │                    │
+        │                  │                    │                    ▼
+        │                  ▼                    │            ┌─────────────┐
+        │           ┌──────────────┐            │            │  Update     │
+        │           │  CSV Parsing │            │            │  Cache      │
+        │           │  (if bulk)   │            │            └─────────────┘
+        │           └──────────────┘            │                    │
+        │                  │                    │                    ▼
+        │                  └────────────────────┘            ┌─────────────┐
+        │                                                   │  Return     │
+        └───────────────────────────────────────────────────│  Response   │
+                                                            └─────────────┘
 
-Link transaction records to user ID for personalization.
 
-Module 1.4: Manual Transaction Input
+8.3 Forecasting Workflow
+-------------------------
 
-Goal: Allow manual entry of dummy transactions.
 
-Interface:
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Forecast   │───▶│  Retrieve     │───▶│  Prepare   │───▶│  Train      │
+│  Request    │    │  Historical   │    │  Time-Series│    │  Model      │
+└─────────────┘    │  Data         │    │  Data        │    └─────────────┘
+                   └──────────────┘    └──────────────┘           │
+                          │                    │                  ▼
+                          │                    │          ┌─────────────┐
+                          │                    │          │  Generate   │
+                          │                    │          │  Forecast   │
+                          │                    │          └─────────────┘
+                          │                    │                  │
+                          ▼                    ▼                  ▼
+                   ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+                   │  Validate    │    │  Handle      │    │  Format     │
+                   │  Data        │    │  Missing     │    │  Results    │
+                   │  Sufficiency │    │  Values      │    └─────────────┘
+                   └──────────────┘    └──────────────┘
 
-Streamlit form with:
 
-Date picker
 
-Amount input
+8.4 Goal Management Workflow
+-----------------------------
 
-Description field
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Goal       │───▶│  Validate     │───▶│  Create      │───▶│  Track      │
+│  Creation   │    │  Inputs       │    │  Goal Record │    │  Progress   │
+└─────────────┘    └──────────────┘    └──────────────┘    └─────────────┘
+        │                  │                    │                    │
+        │                  │                    │                    ▼
+        │                  │                    │            ┌─────────────┐
+        │                  │                    │            │  AI Coaching│
+        │                  │                    │            │  Analysis   │
+        │                  │                    │            └─────────────┘
+        │                  │                    │                    │
+        ▼                  ▼                    ▼                    ▼
+┌─────────────┐    ┌──────────────┐    ┌──────────────┐    ┌─────────────┐
+│  Add        │    │  Calculate   │    │  Update      │    │  Provide    │
+│  Savings    │    │  Progress    │    │  Goal        │    │  Recommendations│
+└─────────────┘    └──────────────┘    └──────────────┘    └─────────────┘
 
-Type selector (Income/Expense)
 
-Backend Logic:
 
-Validates numeric and date inputs.
+9. API Endpoints Documentation
+===============================
 
-Stores entries in transactions table:
 
-Fields: id, user_id, date, amount, description, type
+9.1 Authentication Endpoints
+------------------------------
 
-Outcome: A functioning financial record entry system.
 
-🔹 Milestone 2: Transaction Categorization & Basic Reporting (Weeks 3–4)
-Module 2.1: Automated Categorization
+Method	        Endpoint	        Purpose	            Parameters
+POST	        /auth/register	    User registration	email, password
+POST	        /auth/login	User    authentication	    email, password
+
 
-Goal: Classify each transaction based on its description.
 
-Technique:
+9.2 Transaction Endpoints
+--------------------------
+
+Method      Endpoint	                Purpose	                Parameters
+POST	    /transactions	            Add single transaction	date, amount, description, type, category
+POST	    /transactions/bulk	        Bulk CSV upload	        file (CSV)
+GET	        /transactions	            List user transactions	limit, offset
+PUT	        /transactions/{id}/category	Update category	        category
 
-Uses simple NLP keyword matching with NLTK.
 
-Example:
+9.3 Reporting Endpoints
+-------------------------
 
-“Uber ride” → Transport
+Method	            Endpoint	        Purpose	            Parameters
+GET	                /reports/category	Category spending	days (time period)
+GET	                /reports/monthly	Monthly summaries	months (period count)
+GET	                /reports/overview	Financial overview	None
 
-“Supermarket” → Groceries
 
-“Electric bill” → Utilities
+9.4 Forecasting Endpoints
+-------------------------
 
-A dictionary of keywords and categories is defined.
+Method	        Endpoint	            Purpose	                    Parameters
+POST	        /forecast	            Generate forecast	        category, months_ahead, frequency
+GET	            /forecast/categories	Available categories	    None
+POST	        /forecast/compare	    Multiple forecasts	        categories, months_ahead
+GET	            /forecast/performance	Model metrics	            None
 
-Allows manual override through dropdown selection.
 
-Output: Updated transaction record with a category field.
+9.5 Goals Endpoints
+---------------------
 
-Module 2.2: Spending Summary Reports
+Method	        Endpoint                Purpose	            Parameters
+POST	        /goals	                Create goal	        goal_name, goal_type, target_amount, target_date
+GET	            /goals	                List user goals	    None
+DELETE	        /goals/{id}	            Delete goal	        None
+POST	        /goals/{id}/savings	    Add savings	        amount, description
+GET	            /goals/{id}/coaching    AI coaching	        None
+GET	            /goals/analytics	    Goal analytics	    None
 
-Goal: Summarize financial data for insights.
 
-Methods:
+9.6 Administration Endpoints
+-----------------------------
 
-Pandas used for data aggregation (groupby by category/date).
+Method	            Endpoint	                Purpose	                Parameters
+GET	                /admin/check-access	        Verify admin rights	    None
+GET	                /admin/users	            List all users	        None
+GET	                /admin/transactions	        All transactions	    limit
+GET	                /admin/analytics	        System analytics	    None
+GET	                /admin/categories	        Category statistics	    None
+POST	            /admin/categories/update    Update categories	    old_category, new_category
+GET	                /admin/system/health	    System health	        None
+POST	            /admin/system/cleanup	    Data cleanup	        type
 
-Computes:
 
-Total spending per category.
+10. AI/ML Components Specification
+===================================
 
-Monthly spending summary.
+10.1 NLTK Transaction Categorizer
+-----------------------------------
 
-Income vs Expense comparison.
+Architecture: Hybrid rule-based + machine learning approach
 
-Visuals:
+Processing Pipeline:
+....................
 
-Pie chart for category-wise distribution.
+Preprocessing
+>Tokenization and stop-word removal
+>Lemmatization and stemming
+>Part-of-speech tagging
 
-Bar chart for month-wise trends.
+Rule-Based Categorization
+>Exact pattern matching
+>Fuzzy matching with similarity thresholds
+>Brand-specific context rules
+>Category priority weighting
 
-Line chart for income-expense comparison.
+Machine Learning Fallback
+>TF-IDF vectorization
+>Cosine similarity matching
+>Craining data with comprehensive examples
 
-Module 2.3: Initial Dashboard View
+Category Taxonomy:
+>Essential: Rent, Utilities, Healthcare, Insurance, Loan_Repayment
+>Discretionary: Entertainment, Dining, Shopping, Travel
+>Flexible: Groceries, Transport, Education
+>Income: Salary, Bonus
+>Miscellaneous: Uncategorized transactions
 
-Goal: Display recent transactions and reports in one view.
+10.2 Prophet Forecasting Engine
+-------------------------------
 
-Design:
+Model Configuration:
+>Seasonality: Weekly, monthly, and yearly patterns
+>Holiday Effects: Country-specific holiday integration
+>Changepoint Detection: Automatic trend change identification
+>Uncertainty Intervals: 80% confidence intervals
 
-Top section: Summary stats (Total income, Total expense, Balance)
+Fallback Mechanism:
+>Simple moving average model when Prophet unavailable
+>Trend analysis and seasonal adjustment
+>Confidence interval estimation
 
-Middle: Last 5 transactions
 
-Bottom: Charts (Pie/Bar using Matplotlib)
 
-Outcome: Interactive visual dashboard with instant updates.
+10.3 Goal Coaching AI
+---------------------
 
-🧭 9. Workflow Diagram
+Analysis Components:
+......................
 
-Step-by-step Flow:
+>Financial Capacity Assessment: Income vs. expense analysis
+>Savings Feasibility: Realistic savings capacity calculation
+>Timeline Analysis: Goal achievement probability
+>Spending Optimization: Category-specific reduction opportunities
 
-User registers → login verified.
+Coaching Output:
+..................
 
-Dashboard loads → form to add transaction appears.
+>Success probability percentage
+>Actionable recommendations
+>Monthly savings targets
+>Timeline adjustments
 
-User enters transaction → system stores it in SQLite.
+11. Security Implementation
+============================
 
-Categorization engine runs → tags each entry.
 
-Reports generated → charts and summaries shown.
+11.1 Authentication Security
+----------------------------
 
-📂 10. Database Design
-Table 1: users
-Column	Type	Description
-id	INTEGER	Primary key
-name	TEXT	User name
-email	TEXT	Unique
-password_hash	TEXT	Encrypted password
-Table 2: transactions
-Column	Type	Description
-id	INTEGER	Primary key
-user_id	INTEGER	Linked to users.id
-date	TEXT	Transaction date
-amount	FLOAT	Amount spent/earned
-description	TEXT	Transaction note
-type	TEXT	Income/Expense
-category	TEXT	Auto-assigned or manual
-🔍 11. Testing & Validation
-Test Case	Description	Expected Result
-User registration	New user signup	Success with stored record
-Login validation	Wrong password	Access denied
-Transaction input	Valid data	Stored successfully
-Categorization	"Bus fare"	Category = Transport
-Report generation	Multiple entries	Aggregated summary displayed
-🚀 12. Challenges Faced
+>JWT Tokens: Stateless authentication with expiration
+>Password Hashing: Werkzeug security with salt
+>Input Validation: Comprehensive request validation
+>CORS Protection: Configured cross-origin resource sharing
 
-Designing modular authentication within Streamlit environment.
+11.2 Data Security
+-------------------
 
-Ensuring session-based data persistence.
+>SQL Injection Prevention: Parameterized queries
+>XSS Protection: Input sanitization and output encoding
+>Data Encryption: Sensitive data encryption at rest
+>Access Control: User-level data isolation
 
-Fine-tuning keyword-based categorization accuracy.
+11.3 Administrative Security
+-----------------------------
 
-Managing database schema evolution without data loss.
+>Admin Detection: Hardcoded admin user validation
+>Privilege Separation: Distinct user and admin functionalities
+>Audit Logging: System operation tracking
+>Data Isolation: User data access restrictions
 
-🧩 13. Achievements (Up to Milestone 2)
+12. Performance Optimization
+=============================
 
-Secure user registration & login working.
+12.1 Caching Strategy
+----------------------
 
-Functional transaction input form.
+>Frontend Caching: Transaction data with timestamp validation
+>Database Indexing: Strategic indexes on frequently queried columns
+>Query Optimization: Efficient database query patterns
+>Connection Pooling: Database connection reuse
 
-Categorization engine integrated.
+12.2 Response Time Targets
+---------------------------
 
-Visual summaries generated successfully.
+>Dashboard Load: < 2 seconds
+>Transaction List: < 1 second
+>Forecast Generation: < 10 seconds
+>Goal Coaching: < 5 seconds
 
-Initial dashboard interface completed.
+12.3 Scalability Considerations
+-------------------------------
+
+>Stateless API: Enables horizontal scaling
+>Database Optimization: Efficient query patterns
+>Resource Management: Connection and memory management
+>Error Handling: Graceful degradation under load
+
+13. Error Handling & Validation
+================================
+
+13.1 Input Validation
+----------------------
+
+>Data Type Checking: Type conversion and validation
+>Range Validation: Amount and date boundary checks
+>Format Validation: Date format and email validation
+>Business Logic: Goal feasibility and transaction validity
+
+13.2 Error Response Standardization
+------------------------------------
+
+json
+{
+    "success": false,
+    "error": "Descriptive error message",
+    "code": "ERROR_CODE",
+    "details": {}
+}
+
+13.3 Exception Categories
+--------------------------
+
+>Authentication Errors: Invalid credentials, expired tokens
+>Validation Errors: Invalid input data, missing required fields
+>Database Errors: Constraint violations, connection issues
+>AI/ML Errors: Model training failures, data insufficiency
+>System Errors: Internal server errors, external service failures
+
+14. Deployment Architecture
+============================
+
+14.1 Development Environment
+------------------------------
+
+
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Streamlit     │    │   Flask Dev      │    │   SQLite        │
+│   Client        │◄──►│   Server         │◄──►│   Database      │
+│   (Port 8501)   │    │   (Port 5000)    │    │   (File)        │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+
+
+14.2 Production Readiness
+--------------------------
+
+>Containerization: Docker support for easy deployment
+>Environment Configuration: Environment variable-based configuration
+>Logging: Comprehensive application logging
+>Health Checks: System health monitoring endpoints
+
+14.3 Deployment Considerations
+-------------------------------
+
+>Database Migration: Schema version management
+>Data Backup: Regular database backup procedures
+>Security Hardening: Production security configurations
+>Monitoring: Application performance monitoring
+
+15. Testing Strategy
+=====================
+
+15.1 Test Categories
+---------------------
+
+>Unit Testing: Individual component testing
+>Integration Testing: Module interaction testing
+>API Testing: Endpoint functionality validation
+>UI Testing: Frontend interface testing
+>Performance Testing: Load and stress testing
+
+15.2 Test Coverage Areas
+=========================
+
+>User authentication and authorization
+>Transaction processing and categorization
+>Forecasting algorithm accuracy
+>Goal management functionality
+>Administrative operations
+>Error handling and edge cases
+
+16. Compliance & Data Management
+=================================
+
+16.1 Data Privacy
+------------------
+
+>User Data Isolation: Strict separation between user data
+>Minimal Data Collection: Only essential user information
+>Data Encryption: Sensitive data protection
+>Access Logging: User activity tracking
+
+16.2 Financial Data Handling
+------------------------------
+
+>Data Accuracy: Validation and verification processes
+>Audit Trail: Transaction history preservation
+>Data Integrity: Constraint enforcement and validation
+>Backup Procedures: Regular data backup schedules
+
+17. Maintenance & Operations
+=============================
+
+17.1 Regular Maintenance Tasks
+-------------------------------
+
+>Database Cleanup: Orphaned data removal
+>Cache Management: Cache invalidation and refresh
+>Log Rotation: Log file management
+>Performance Monitoring: System performance tracking
+
+17.2 Administrative Operations
+-------------------------------
+
+>User Management: User account administration
+>Category Management: Transaction category normalization
+>System Monitoring: Health and performance monitoring
+>Data Analytics: Usage pattern analysis
+
+18. Screenshots Section
+
+
+19. Conclusion
+=================
+
+BudgetWise AI represents a comprehensive solution to modern personal financial management challenges. By leveraging artificial intelligence for categorization, forecasting, and goal coaching, the system provides users with intelligent insights and actionable recommendations for better financial decision-making.
+
+The architecture demonstrates a robust full-stack implementation with proper security measures, performance optimization, and scalability considerations. The modular design allows for maintainability and future extensibility while providing immediate value through its core financial management capabilities.
+
+This documentation serves as a comprehensive reference for understanding the system's architecture, functionality, and implementation details, providing a solid foundation for deployment, maintenance, and potential future development.
+
